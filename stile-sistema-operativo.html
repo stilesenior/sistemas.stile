@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STILE — Sistema Operativo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --v: #4ADE29; --vd: #2a8a15; --n: #060606;
+  --g1: #0e0e0e; --g2: #161616; --g3: #222; --g4: #333;
+  --t1: #fff; --t2: #aaa; --t3: #555;
+  --blue: #4488ff; --gold: #FFD700; --orange: #ff8c00; --red: #ff4040; --purple: #aa44ff;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:var(--n); color:var(--t1); font-family:'Barlow',sans-serif; min-height:100vh; }
+::-webkit-scrollbar { width:3px; height:3px; }
+::-webkit-scrollbar-thumb { background:var(--v); }
+
+/* NAV PRINCIPAL */
+.topnav { background:rgba(6,6,6,0.97); backdrop-filter:blur(16px); border-bottom:1px solid var(--g3); padding:0 20px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+.tn-logo { display:flex; align-items:center; gap:9px; flex-shrink:0; }
+.tn-box { background:var(--v); color:var(--n); font-family:'Bebas Neue',sans-serif; font-size:12px; padding:3px 7px; letter-spacing:1px; }
+.tn-title { font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:2px; }
+.tn-key-btn { background:var(--g2); border:1px solid var(--g3); color:var(--t2); font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; padding:6px 10px; cursor:pointer; white-space:nowrap; }
+.tn-key-btn.active { border-color:var(--v); color:var(--v); }
+
+/* TABS DE SECCIONES */
+.section-tabs { background:var(--g1); border-bottom:1px solid var(--g3); display:flex; overflow-x:auto; position:sticky; top:56px; z-index:90; }
+.section-tab { background:transparent; border:none; color:var(--t3); font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:14px 18px; cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; display:flex; align-items:center; gap:6px; }
+.section-tab.active { color:var(--v); border-bottom-color:var(--v); }
+.section-tab .ic { font-size:13px; }
+
+/* CONTENEDOR DE SECCIONES */
+.section-panel { display:none; padding:20px 16px 60px; max-width:1100px; margin:0 auto; }
+.section-panel.active { display:block; }
+
+/* ELEMENTOS COMUNES */
+.page-title { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1px; margin-bottom:4px; }
+.page-title span { color:var(--v); }
+.page-sub { font-size:12px; color:var(--t3); margin-bottom:20px; }
+
+.subtabs { display:flex; gap:2px; margin-bottom:16px; flex-wrap:wrap; }
+.subtab-btn { background:var(--g1); color:var(--t2); border:none; padding:9px 16px; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; }
+.subtab-btn.active { background:var(--v); color:var(--n); }
+.spacer { flex:1; }
+
+.btn-new { background:var(--v); color:var(--n); border:none; padding:9px 16px; font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:900; letter-spacing:1px; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
+.btn-new.cancel { background:var(--g2); color:var(--t2); border:1px solid var(--g3); }
+.btn-new.blue { background:var(--blue); color:#fff; }
+.btn-new.gold { background:var(--gold); color:var(--n); }
+
+.form-box { background:var(--g1); border:1px solid var(--g3); border-left:3px solid var(--v); padding:18px; margin-bottom:18px; }
+.field { margin-bottom:12px; }
+.field-label { font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--t3); display:block; margin-bottom:5px; }
+.field-input, .field-select, .field-textarea { width:100%; background:var(--g2); border:1px solid var(--g3); color:var(--t1); padding:10px 12px; font-size:13px; outline:none; font-family:inherit; }
+.field-input:focus, .field-select:focus, .field-textarea:focus { border-color:var(--v); }
+.field-textarea { resize:vertical; }
+.field-row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.field-row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.btn-save { background:var(--v); color:var(--n); border:none; padding:12px 24px; font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; }
+
+.empty { text-align:center; padding:40px 20px; color:var(--t3); font-size:12px; border:1px dashed var(--g3); }
+
+/* TABLA GENERICA */
+.data-table-wrap { overflow-x:auto; background:var(--g1); border:1px solid var(--g3); }
+.data-table { width:100%; border-collapse:collapse; font-size:12px; min-width:700px; }
+.data-table th { background:var(--g2); color:var(--t2); font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:10px 12px; text-align:left; white-space:nowrap; border-bottom:1px solid var(--g3); }
+.data-table td { padding:10px 12px; border-bottom:1px solid var(--g2); color:var(--t2); vertical-align:middle; }
+.data-table tr:hover td { background:rgba(255,255,255,0.02); }
+.data-table input, .data-table select { background:var(--g2); border:1px solid var(--g3); color:var(--t1); padding:6px 8px; font-size:11px; font-family:inherit; width:100%; outline:none; }
+.data-table input:focus, .data-table select:focus { border-color:var(--v); }
+.mini-btn { background:transparent; border:1px solid var(--g3); color:var(--t3); padding:4px 8px; font-size:10px; cursor:pointer; }
+.mini-btn:hover { border-color:var(--red); color:var(--red); }
+.mini-btn.view { border-color:var(--vd); color:var(--v); }
+
+/* CARDS DE CONTENIDO */
+.items { display:flex; flex-direction:column; gap:2px; }
+.item { background:var(--g1); border:1px solid var(--g3); padding:14px 16px; border-left:3px solid var(--g4); }
+.item-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
+.item-idea { font-size:13.5px; font-weight:600; margin-bottom:5px; line-height:1.4; }
+.item-tags { display:flex; gap:5px; flex-wrap:wrap; }
+.item-tag { font-size:8.5px; background:var(--g2); color:var(--t2); padding:3px 7px; letter-spacing:0.4px; }
+.item-estado { font-size:8.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
+.item-actions { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+
+/* KPI CARDS */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:2px; margin-bottom:20px; }
+.kpi-card { background:var(--g1); padding:18px 16px; text-align:center; border-top:2px solid var(--g3); }
+.kpi-card.v { border-top-color:var(--v); }
+.kpi-card.blue { border-top-color:var(--blue); }
+.kpi-card.gold { border-top-color:var(--gold); }
+.kpi-num { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--v); line-height:1; margin-bottom:4px; }
+.kpi-label { font-size:9px; color:var(--t3); text-transform:uppercase; letter-spacing:0.5px; line-height:1.3; }
+
+/* HBOX INFO */
+.hbox { background:var(--g2); border-left:3px solid var(--v); padding:14px 16px; margin-bottom:16px; font-size:12px; color:var(--t2); line-height:1.6; }
+.hbox b { color:var(--v); }
+.hbox.gold { border-left-color:var(--gold); }
+.hbox.blue { border-left-color:var(--blue); }
+
+/* MODAL */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.92); backdrop-filter:blur(10px); z-index:200; display:none; align-items:flex-start; justify-content:center; padding:16px; overflow-y:auto; }
+.overlay.open { display:flex; }
+.modal { background:var(--g1); border:1px solid var(--g3); border-top:3px solid var(--v); width:100%; max-width:560px; margin:auto; }
+.modal-header { padding:18px 20px; border-bottom:1px solid var(--g3); display:flex; justify-content:space-between; align-items:flex-start; }
+.modal-title-sm { font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--v); margin-bottom:4px; }
+.modal-title { font-size:15px; font-weight:600; }
+.modal-close { background:var(--g2); border:1px solid var(--g3); color:var(--t2); width:28px; height:28px; cursor:pointer; font-size:14px; flex-shrink:0; }
+.modal-body { padding:18px 20px; }
+.modal-footer { padding:14px 20px; border-top:1px solid var(--g3); display:flex; gap:8px; }
+
+/* TABS CONTENT AREA (subtabs para calendario IG/TikTok) */
+.week-block { background:var(--g1); border:1px solid var(--g3); margin-bottom:16px; }
+.week-header { padding:14px 18px; background:var(--g2); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+.week-num { font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--v); letter-spacing:1px; }
+.week-tema-input { background:var(--g1); border:1px solid var(--g3); color:var(--t1); padding:8px 12px; font-size:12px; font-family:inherit; flex:1; min-width:180px; outline:none; }
+.week-tema-input:focus { border-color:var(--v); }
+
+@media (max-width:700px) {
+  .field-row2, .field-row3 { grid-template-columns:1fr; }
+  .tn-title { display:none; }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="tn-logo">
+    <div class="tn-box">STILE</div>
+    <div class="tn-title">SISTEMA OPERATIVO</div>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <span id="sync-indicator" style="font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; color:var(--t3);">● Conectando...</span>
+    <button class="tn-key-btn" id="key-btn" onclick="openKeyModal()">Clave IA</button>
+  </div>
+</nav>
+
+<div class="section-tabs" id="section-tabs">
+  <button class="section-tab active" data-section="dashboard" onclick="setSection('dashboard')"><span class="ic">◆</span> Dashboard</button>
+  <button class="section-tab" data-section="contenido" onclick="setSection('contenido')"><span class="ic">▶</span> Contenido</button>
+  <button class="section-tab" data-section="comercial" onclick="setSection('comercial')"><span class="ic">$</span> Comercial</button>
+  <button class="section-tab" data-section="comunidad" onclick="setSection('comunidad')"><span class="ic">●</span> Comunidad</button>
+  <button class="section-tab" data-section="finanzas" onclick="setSection('finanzas')"><span class="ic">#</span> Finanzas</button>
+  <button class="section-tab" data-section="agenda" onclick="setSection('agenda')"><span class="ic">✓</span> Agenda</button>
+</div>
+
+<!-- ═══════════ PLACEHOLDER PANELS (se completan en las siguientes partes) ═══════════ -->
+<div class="section-panel active" id="panel-dashboard">
+  <div class="page-title">Dashboard <span>General</span></div>
+  <div class="page-sub">Todo el negocio de un vistazo. Actualizado en tiempo real con lo que cargues en cada hoja.</div>
+  <div class="kpi-grid" id="dash-objetivo"></div>
+  <div class="kpi-grid" id="dash-kpis"></div>
+  <div class="hbox" id="dash-tasa-conversion"></div>
+</div>
+<div class="section-panel" id="panel-contenido">
+  <div class="page-title">Hoja de <span>Contenido</span></div>
+  <div class="page-sub">Ideas, guiones, calendario semanal con temática, y control de editores por video.</div>
+
+  <div class="subtabs" id="cont-subtabs">
+    <button class="subtab-btn active" data-ctab="ideas" onclick="setContTab('ideas')">Ideas y Guiones</button>
+    <button class="subtab-btn" data-ctab="calendario" onclick="setContTab('calendario')">Calendario Semanal</button>
+  </div>
+
+  <!-- ═══ SUB-TAB: IDEAS Y GUIONES ═══ -->
+  <div class="ctab-panel active" id="ctab-ideas">
+    <div class="subtabs">
+      <button class="subtab-btn active" data-platform="todos" onclick="setContentFilter('todos')">Todos</button>
+      <button class="subtab-btn" data-platform="tiktok" onclick="setContentFilter('tiktok')">TikTok</button>
+      <button class="subtab-btn" data-platform="ig" onclick="setContentFilter('ig')">Instagram</button>
+      <div class="spacer"></div>
+      <button class="btn-new" id="btn-toggle-content-form" onclick="toggleContentForm()">+ Nueva idea</button>
+    </div>
+
+    <div class="form-box" id="content-form-box" style="display:none;">
+      <div class="field">
+        <label class="field-label">Idea / qué pasó</label>
+        <textarea class="field-textarea" id="ci-idea" rows="2" placeholder="Ej: hoy un cliente activó Mi Plan por primera vez..."></textarea>
+      </div>
+      <div class="field-row2">
+        <div class="field">
+          <label class="field-label">Pilar</label>
+          <select class="field-select" id="ci-pilar">
+            <option>Proceso real</option><option>Educativo</option><option>Detrás de escena</option>
+            <option>Oportunidad/Comunidad</option><option>Testimonio</option><option>Visión/Reflexión</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Plataforma</label>
+          <select class="field-select" id="ci-plataforma">
+            <option>TikTok</option><option>Instagram</option><option>Ambas</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Dueño del video (quién lo edita)</label>
+        <input class="field-input" id="ci-dueno" placeholder="Ej: Germán, o el nombre del editor">
+      </div>
+      <button class="btn-save" onclick="addContentItem()">Guardar idea</button>
+    </div>
+
+    <div class="empty" id="content-empty">Todavía no hay ideas cargadas.</div>
+    <div class="items" id="content-items-list"></div>
+  </div>
+
+  <!-- ═══ SUB-TAB: CALENDARIO SEMANAL ═══ -->
+  <div class="ctab-panel" id="ctab-calendario" style="display:none;">
+    <div class="subtabs">
+      <button class="btn-new blue" onclick="addWeek()">+ Agregar semana</button>
+    </div>
+    <div id="weeks-container"></div>
+  </div>
+</div>
+
+<!-- MODAL VER/EDITAR GUION -->
+<div class="overlay" id="guion-overlay" onclick="closeOnBg(event,'guion-overlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title-sm">Guion</div>
+        <div class="modal-title" id="modal-idea-text">—</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('guion-overlay')">✕</div>
+    </div>
+    <div class="modal-body">
+      <textarea id="modal-guion-textarea" placeholder="Pegá acá el guion terminado..." style="width:100%; min-height:260px; background:var(--n); border:1px solid var(--g3); border-left:2px solid var(--v); padding:16px 18px; font-size:13px; line-height:1.8; color:var(--t2); font-family:inherit; resize:vertical; outline:none;" oninput="saveGuionEdit()"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-save" style="flex:1;" onclick="closeModal('guion-overlay')">Listo</button>
+      <button class="mini-btn" onclick="copiarGuionModal()" style="padding:11px 18px; font-size:11px;">Copiar</button>
+    </div>
+  </div>
+</div>
+<div class="section-panel" id="panel-comercial">
+  <div class="page-title">Hoja <span>Comercial</span></div>
+  <div class="page-sub">CRM de clientes, tasa de conversión del funnel — el número que manda por sobre todos.</div>
+
+  <div class="kpi-grid" id="comercial-kpis"></div>
+
+  <div class="subtabs">
+    <div class="spacer"></div>
+    <button class="btn-new" onclick="addCliente()">+ Nuevo cliente</button>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead><tr>
+        <th>Nombre</th><th>Fecha Oportunidad</th><th>Activó Mi Plan</th><th>Fecha Pago</th>
+        <th>Monto (ARS)</th><th>Suscripción</th><th>Último contacto</th><th>Estado</th><th></th>
+      </tr></thead>
+      <tbody id="clientes-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-panel" id="panel-comunidad">
+  <div class="page-title">Comunidad <span>PuntoZero</span></div>
+  <div class="page-sub">Calendario del canal, capacitaciones y Día de Oportunidad.</div>
+
+  <div class="subtabs">
+    <button class="subtab-btn active" data-cotab="canal" onclick="setComunidadTab('canal')">Calendario Canal</button>
+    <button class="subtab-btn" data-cotab="capacitaciones" onclick="setComunidadTab('capacitaciones')">Capacitaciones</button>
+  </div>
+
+  <div class="cotab-panel active" id="cotab-canal">
+    <div class="subtabs"><div class="spacer"></div><button class="btn-new" onclick="addCanalPost()">+ Nueva publicación</button></div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Día</th><th>Tipo</th><th>Contenido</th><th>Publicado</th><th></th></tr></thead>
+        <tbody id="canal-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cotab-panel" id="cotab-capacitaciones" style="display:none;">
+    <div class="hbox gold">El <b>Día de Oportunidad</b> tiene formato fijo — solo se mide cuánta gente entra y cuántos activan "Mi Plan" (tasa de retención de la presentación). Las <b>capacitaciones</b> sí necesitan variedad de tema cada semana.</div>
+    <div class="subtabs"><div class="spacer"></div><button class="btn-new" onclick="addCapacitacion()">+ Nueva capacitación</button></div>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Fecha</th><th>Tema capacitación</th><th>Personas en Oportunidad</th><th>Activaron Mi Plan</th><th>Tasa retención</th><th></th></tr></thead>
+        <tbody id="capacitaciones-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section-panel" id="panel-finanzas">
+  <div class="page-title">Estado <span>Financiero</span></div>
+  <div class="page-sub">Ingresos, costos y objetivos del negocio.</div>
+
+  <div class="kpi-grid" id="finanzas-kpis"></div>
+
+  <div class="subtabs"><div class="spacer"></div><button class="btn-new" onclick="addFinanzaSemana()">+ Nueva semana</button></div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead><tr>
+        <th>Semana</th><th>Ingreso pago único (ARS)</th><th>Ingreso suscripción (ARS)</th>
+        <th>Costos fijos (USD)</th><th>Clientes activos</th><th></th>
+      </tr></thead>
+      <tbody id="finanzas-tbody"></tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:24px;">
+    <div class="page-title" style="font-size:18px;">Objetivos del año</div>
+    <div class="field-row3">
+      <div class="field">
+        <label class="field-label">Meta seguidores TikTok</label>
+        <input class="field-input" id="obj-tiktok" type="number" placeholder="10000" onchange="saveObjetivos()">
+      </div>
+      <div class="field">
+        <label class="field-label">Meta miembros PuntoZero</label>
+        <input class="field-input" id="obj-puntozero" type="number" placeholder="500" onchange="saveObjetivos()">
+      </div>
+      <div class="field">
+        <label class="field-label">Meta clientes activos</label>
+        <input class="field-input" id="obj-clientes" type="number" placeholder="50" onchange="saveObjetivos()">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-panel" id="panel-agenda">
+  <div class="page-title">Agenda <span>Operativa</span></div>
+  <div class="page-sub">Tareas diarias y semanales — el ritual del lunes con el equipo.</div>
+
+  <div class="subtabs">
+    <button class="subtab-btn active" data-atab="semana" onclick="setAgendaTab('semana')">Esta semana</button>
+    <div class="spacer"></div>
+    <button class="btn-new" onclick="addTarea()">+ Nueva tarea</button>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Tarea</th><th>Área</th><th>Responsable</th><th>Vence</th><th>Hecha</th><th></th></tr></thead>
+      <tbody id="tareas-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL CLAVE API -->
+<div class="overlay" id="key-overlay" onclick="closeOnBg(event,'key-overlay')">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title-sm">Configuración</div>
+        <div class="modal-title">Clave de API</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('key-overlay')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12.5px; color:var(--t2); line-height:1.7; margin-bottom:14px;">Pegá tu clave de API de Anthropic (la misma de tu Claude Console). Queda guardada solo en este navegador.</div>
+      <input type="password" class="field-input" id="api-key-input" placeholder="sk-ant-..." style="margin-bottom:12px;">
+      <button class="btn-save" style="width:100%;" onclick="saveApiKey()">Guardar clave</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONEXIÓN A SUPABASE — SINCRONIZACIÓN ENTRE DISPOSITIVOS
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL = 'https://hcbmriytxedecuyekfvm.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_mlrwyA6vX2bnVlYYVi02rQ_NaESJ8IY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const DATA_ROW_ID = 'stile-sistema-main';
+
+let syncTimeout = null;
+let isDataLoaded = false;
+
+// Guarda TODO el estado en Supabase (con debounce para no saturar de llamadas)
+function syncToCloud() {
+  if (!isDataLoaded) return; // no sincronizar hasta haber cargado los datos iniciales
+  clearTimeout(syncTimeout);
+  document.getElementById('sync-indicator').textContent = '● Guardando...';
+  document.getElementById('sync-indicator').style.color = '#FFD700';
+  syncTimeout = setTimeout(async () => {
+    const payload = {
+      contentItems, weeks, clientes, canalPosts, capacitaciones, finanzas, tareas,
+      objetivos: {
+        tiktok: document.getElementById('obj-tiktok') ? document.getElementById('obj-tiktok').value : '',
+        puntozero: document.getElementById('obj-puntozero') ? document.getElementById('obj-puntozero').value : '',
+        clientes: document.getElementById('obj-clientes') ? document.getElementById('obj-clientes').value : ''
+      }
+    };
+    try {
+      const { error } = await sb.from('stile_data').upsert({ id: DATA_ROW_ID, data: payload, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      document.getElementById('sync-indicator').textContent = '● Sincronizado';
+      document.getElementById('sync-indicator').style.color = '#4ADE29';
+    } catch (err) {
+      document.getElementById('sync-indicator').textContent = '● Error al guardar';
+      document.getElementById('sync-indicator').style.color = '#ff4040';
+      console.error('Error sync:', err);
+    }
+  }, 600);
+}
+
+// Carga TODO el estado desde Supabase al abrir la página
+async function loadFromCloud() {
+  document.getElementById('sync-indicator').textContent = '● Cargando...';
+  document.getElementById('sync-indicator').style.color = '#FFD700';
+  try {
+    const { data, error } = await sb.from('stile_data').select('data').eq('id', DATA_ROW_ID).maybeSingle();
+    if (error) throw error;
+    if (data && data.data) {
+      contentItems = data.data.contentItems || [];
+      weeks = data.data.weeks || [];
+      clientes = data.data.clientes || [];
+      canalPosts = data.data.canalPosts || [];
+      capacitaciones = data.data.capacitaciones || [];
+      finanzas = data.data.finanzas || [];
+      tareas = data.data.tareas || [];
+      const objetivos = data.data.objetivos || {};
+      if (document.getElementById('obj-tiktok')) {
+        document.getElementById('obj-tiktok').value = objetivos.tiktok || '';
+        document.getElementById('obj-puntozero').value = objetivos.puntozero || '';
+        document.getElementById('obj-clientes').value = objetivos.clientes || '';
+      }
+    }
+    document.getElementById('sync-indicator').textContent = '● Sincronizado';
+    document.getElementById('sync-indicator').style.color = '#4ADE29';
+  } catch (err) {
+    document.getElementById('sync-indicator').textContent = '● Sin conexión';
+    document.getElementById('sync-indicator').style.color = '#ff4040';
+    console.error('Error cargando:', err);
+  }
+  isDataLoaded = true;
+  renderContentItems();
+  renderWeeks();
+  renderClientes();
+  renderCanalPosts();
+  renderCapacitaciones();
+  renderFinanzas();
+  renderTareas();
+  renderDashboard();
+}
+
+// ═══ NAVEGACIÓN DE SECCIONES ═══
+function setSection(section) {
+  document.querySelectorAll('.section-tab').forEach(b => b.classList.toggle('active', b.dataset.section === section));
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + section).classList.add('active');
+  if (typeof renderDashboard === 'function' && section === 'dashboard') renderDashboard();
+}
+
+// ═══ API KEY (compartida por todo el sistema) ═══
+function getApiKey() { return localStorage.getItem('stile_api_key') || ''; }
+function openKeyModal() {
+  document.getElementById('api-key-input').value = getApiKey();
+  document.getElementById('key-overlay').classList.add('open');
+}
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  localStorage.setItem('stile_api_key', key);
+  updateKeyBtn();
+  closeModal('key-overlay');
+}
+function updateKeyBtn() {
+  const btn = document.getElementById('key-btn');
+  if (getApiKey()) { btn.textContent = '✓ Clave OK'; btn.classList.add('active'); }
+  else { btn.textContent = 'Clave IA'; btn.classList.remove('active'); }
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeOnBg(e, id) { if (e.target.id === id) closeModal(id); }
+function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+updateKeyBtn();
+
+// ═══════════════════════════════════════════════════
+// MÓDULO: CONTENIDO
+// ═══════════════════════════════════════════════════
+let contentItems = [];
+let contentFilter = 'todos';
+let currentGuionItemId = null;
+let weeks = [];
+
+const ESTADO_COLOR = { 'Idea': '#666', 'Guion listo': '#4488ff', 'Grabado': '#FFD700', 'Editado': '#ff8c00', 'Publicado': '#4ADE29' };
+
+function saveContentItems() { syncToCloud(); }
+function saveWeeks() { syncToCloud(); }
+
+function setContTab(tab) {
+  document.querySelectorAll('#cont-subtabs .subtab-btn').forEach(b => b.classList.toggle('active', b.dataset.ctab === tab));
+  document.getElementById('ctab-ideas').style.display = tab === 'ideas' ? 'block' : 'none';
+  document.getElementById('ctab-calendario').style.display = tab === 'calendario' ? 'block' : 'none';
+  if (tab === 'calendario') renderWeeks();
+}
+
+function toggleContentForm() {
+  const box = document.getElementById('content-form-box');
+  const btn = document.getElementById('btn-toggle-content-form');
+  const isOpen = box.style.display !== 'none';
+  box.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '+ Nueva idea' : 'Cancelar';
+  btn.classList.toggle('cancel', !isOpen);
+}
+
+function setContentFilter(f) {
+  contentFilter = f;
+  document.querySelectorAll('[data-platform]').forEach(b => b.classList.toggle('active', b.dataset.platform === f));
+  renderContentItems();
+}
+
+function addContentItem() {
+  const idea = document.getElementById('ci-idea').value.trim();
+  if (!idea) return;
+  contentItems.unshift({
+    id: Date.now(), idea,
+    pilar: document.getElementById('ci-pilar').value,
+    plataforma: document.getElementById('ci-plataforma').value,
+    dueno: document.getElementById('ci-dueno').value.trim() || 'Germán',
+    estado: 'Idea', guion: '',
+    fecha: new Date().toLocaleDateString('es-AR')
+  });
+  saveContentItems();
+  document.getElementById('ci-idea').value = '';
+  document.getElementById('ci-dueno').value = '';
+  toggleContentForm();
+  renderContentItems();
+}
+
+function renderContentItems() {
+  const filtered = contentItems.filter(it => {
+    if (contentFilter === 'todos') return true;
+    if (contentFilter === 'tiktok') return it.plataforma === 'TikTok' || it.plataforma === 'Ambas';
+    if (contentFilter === 'ig') return it.plataforma === 'Instagram' || it.plataforma === 'Ambas';
+    return true;
+  });
+  const emptyEl = document.getElementById('content-empty');
+  const listEl = document.getElementById('content-items-list');
+  if (!emptyEl || !listEl) return;
+  emptyEl.style.display = filtered.length ? 'none' : 'block';
+  listEl.innerHTML = filtered.map(it => `
+    <div class="item" style="border-left-color:${ESTADO_COLOR[it.estado]}">
+      <div class="item-top">
+        <div style="flex:1">
+          <div class="item-idea">${escapeHtml(it.idea)}</div>
+          <div class="item-tags">
+            <span class="item-tag">${it.pilar}</span>
+            <span class="item-tag">${it.plataforma}</span>
+            <span class="item-tag">👤 ${escapeHtml(it.dueno)}</span>
+          </div>
+        </div>
+        <span class="item-estado" style="color:${ESTADO_COLOR[it.estado]}">${it.estado}</span>
+      </div>
+      <div class="item-actions">
+        <button class="btn-new" style="padding:6px 12px; font-size:9px;" onclick="verGuion(${it.id})">${it.guion ? 'Ver/editar guion' : 'Pegar guion'}</button>
+        <select class="field-select" style="width:auto; padding:6px 8px; font-size:9px;" onchange="updateContentEstado(${it.id}, this.value)">
+          ${Object.keys(ESTADO_COLOR).map(e => `<option ${e===it.estado?'selected':''}>${e}</option>`).join('')}
+        </select>
+        <button class="mini-btn" onclick="deleteContentItem(${it.id})" style="margin-left:auto;">Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateContentEstado(id, estado) {
+  const item = contentItems.find(i => i.id === id);
+  if (item) { item.estado = estado; saveContentItems(); renderContentItems(); }
+}
+function deleteContentItem(id) {
+  if (!confirm('¿Eliminar esta idea?')) return;
+  contentItems = contentItems.filter(i => i.id !== id);
+  saveContentItems();
+  renderContentItems();
+}
+
+function verGuion(id) {
+  currentGuionItemId = id;
+  const item = contentItems.find(i => i.id === id);
+  document.getElementById('modal-idea-text').textContent = item.idea;
+  document.getElementById('modal-guion-textarea').value = item.guion || '';
+  document.getElementById('guion-overlay').classList.add('open');
+}
+function saveGuionEdit() {
+  const item = contentItems.find(i => i.id === currentGuionItemId);
+  if (!item) return;
+  item.guion = document.getElementById('modal-guion-textarea').value;
+  if (item.guion && item.estado === 'Idea') item.estado = 'Guion listo';
+  saveContentItems();
+}
+function copiarGuionModal() {
+  navigator.clipboard.writeText(document.getElementById('modal-guion-textarea').value);
+}
+
+// ═══ CALENDARIO SEMANAL ═══
+function addWeek() {
+  weeks.push({ id: Date.now(), tema: '', fechaInicio: new Date().toLocaleDateString('es-AR'), videos: [] });
+  saveWeeks();
+  renderWeeks();
+}
+
+function renderWeeks() {
+  const container = document.getElementById('weeks-container');
+  if (!container) return;
+  if (weeks.length === 0) {
+    container.innerHTML = '<div class="empty">Todavía no hay semanas cargadas. Tocá "+ Agregar semana".</div>';
+    return;
+  }
+  container.innerHTML = weeks.map((w, idx) => `
+    <div class="week-block">
+      <div class="week-header">
+        <div class="week-num">Semana ${idx + 1}</div>
+        <input class="week-tema-input" placeholder="Temática de la semana (ej: cómo conseguir tu primer cliente)" value="${escapeHtml(w.tema)}" onchange="updateWeekTema(${w.id}, this.value)">
+        <button class="mini-btn" onclick="deleteWeek(${w.id})">Eliminar semana</button>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Fecha</th><th>Plataforma</th><th>Idea/Video</th><th>Dueño</th>
+            <th>Editor</th><th>Views</th><th>Pago editor</th><th>Estado</th><th></th>
+          </tr></thead>
+          <tbody id="week-videos-${w.id}"></tbody>
+        </table>
+      </div>
+      <div style="padding:10px 14px;">
+        <button class="btn-new" style="font-size:9px;" onclick="addVideoToWeek(${w.id})">+ Agregar video a esta semana</button>
+      </div>
+    </div>
+  `).join('');
+  weeks.forEach(w => renderWeekVideos(w.id));
+}
+
+function updateWeekTema(weekId, tema) {
+  const w = weeks.find(x => x.id === weekId);
+  if (w) { w.tema = tema; saveWeeks(); }
+}
+function deleteWeek(weekId) {
+  if (!confirm('¿Eliminar esta semana y sus videos?')) return;
+  weeks = weeks.filter(w => w.id !== weekId);
+  saveWeeks();
+  renderWeeks();
+}
+
+function addVideoToWeek(weekId) {
+  const w = weeks.find(x => x.id === weekId);
+  if (!w) return;
+  w.videos.push({ id: Date.now(), fecha: '', plataforma: 'TikTok', idea: '', dueno: 'Germán', editor: '', views: '', pagoEditor: '', estado: 'Pendiente' });
+  saveWeeks();
+  renderWeekVideos(weekId);
+}
+
+function renderWeekVideos(weekId) {
+  const w = weeks.find(x => x.id === weekId);
+  const tbody = document.getElementById('week-videos-' + weekId);
+  if (!tbody) return;
+  if (w.videos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--t3);">Sin videos en esta semana</td></tr>';
+    return;
+  }
+  tbody.innerHTML = w.videos.map(v => `
+    <tr>
+      <td><input type="date" value="${v.fecha}" onchange="updateVideoField(${weekId},${v.id},'fecha',this.value)"></td>
+      <td>
+        <select onchange="updateVideoField(${weekId},${v.id},'plataforma',this.value)">
+          <option ${v.plataforma==='TikTok'?'selected':''}>TikTok</option>
+          <option ${v.plataforma==='Instagram'?'selected':''}>Instagram</option>
+          <option ${v.plataforma==='Ambas'?'selected':''}>Ambas</option>
+        </select>
+      </td>
+      <td><input type="text" value="${escapeHtml(v.idea)}" placeholder="Idea/tema del video" onchange="updateVideoField(${weekId},${v.id},'idea',this.value)"></td>
+      <td><input type="text" value="${escapeHtml(v.dueno)}" onchange="updateVideoField(${weekId},${v.id},'dueno',this.value)"></td>
+      <td><input type="text" value="${escapeHtml(v.editor)}" placeholder="—" onchange="updateVideoField(${weekId},${v.id},'editor',this.value)"></td>
+      <td><input type="number" value="${v.views}" placeholder="0" onchange="updateVideoField(${weekId},${v.id},'views',this.value)"></td>
+      <td><input type="text" value="${v.pagoEditor}" placeholder="$" onchange="updateVideoField(${weekId},${v.id},'pagoEditor',this.value)"></td>
+      <td>
+        <select onchange="updateVideoField(${weekId},${v.id},'estado',this.value)">
+          <option ${v.estado==='Pendiente'?'selected':''}>Pendiente</option>
+          <option ${v.estado==='Grabado'?'selected':''}>Grabado</option>
+          <option ${v.estado==='Editado'?'selected':''}>Editado</option>
+          <option ${v.estado==='Publicado'?'selected':''}>Publicado</option>
+        </select>
+      </td>
+      <td><button class="mini-btn" onclick="deleteVideoFromWeek(${weekId},${v.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function updateVideoField(weekId, videoId, field, value) {
+  const w = weeks.find(x => x.id === weekId);
+  const v = w.videos.find(x => x.id === videoId);
+  if (v) { v[field] = value; saveWeeks(); }
+}
+function deleteVideoFromWeek(weekId, videoId) {
+  const w = weeks.find(x => x.id === weekId);
+  w.videos = w.videos.filter(v => v.id !== videoId);
+  saveWeeks();
+  renderWeekVideos(weekId);
+}
+
+
+// ═══════════════════════════════════════════════════
+// MÓDULO: COMERCIAL (CRM)
+// ═══════════════════════════════════════════════════
+let clientes = [];
+function saveClientes() { syncToCloud(); }
+
+function addCliente() {
+  clientes.push({ id: Date.now(), nombre: '', fechaOportunidad: '', activoPlan: 'No', fechaPago: '', monto: '', suscripcion: 'Pendiente', ultimoContacto: '', estado: 'Nuevo' });
+  saveClientes();
+  renderClientes();
+}
+function updateCliente(id, field, value) {
+  const c = clientes.find(x => x.id === id);
+  if (c) { c[field] = value; saveClientes(); renderClientes(); }
+}
+function deleteCliente(id) {
+  if (!confirm('¿Eliminar este cliente?')) return;
+  clientes = clientes.filter(x => x.id !== id);
+  saveClientes();
+  renderClientes();
+}
+
+function renderClientes() {
+  const tbody = document.getElementById('clientes-tbody');
+  if (!tbody) return;
+  if (clientes.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--t3);">Sin clientes cargados</td></tr>';
+  } else {
+    tbody.innerHTML = clientes.map(c => `
+      <tr>
+        <td><input type="text" value="${escapeHtml(c.nombre)}" onchange="updateCliente(${c.id},'nombre',this.value)"></td>
+        <td><input type="date" value="${c.fechaOportunidad}" onchange="updateCliente(${c.id},'fechaOportunidad',this.value)"></td>
+        <td><select onchange="updateCliente(${c.id},'activoPlan',this.value)"><option ${c.activoPlan==='Sí'?'selected':''}>Sí</option><option ${c.activoPlan==='No'?'selected':''}>No</option></select></td>
+        <td><input type="date" value="${c.fechaPago}" onchange="updateCliente(${c.id},'fechaPago',this.value)"></td>
+        <td><input type="number" value="${c.monto}" placeholder="25000" onchange="updateCliente(${c.id},'monto',this.value)"></td>
+        <td><select onchange="updateCliente(${c.id},'suscripcion',this.value)"><option ${c.suscripcion==='Sí'?'selected':''}>Sí</option><option ${c.suscripcion==='No'?'selected':''}>No</option><option ${c.suscripcion==='Pendiente'?'selected':''}>Pendiente</option></select></td>
+        <td><input type="date" value="${c.ultimoContacto}" onchange="updateCliente(${c.id},'ultimoContacto',this.value)"></td>
+        <td><select onchange="updateCliente(${c.id},'estado',this.value)">
+          <option ${c.estado==='Nuevo'?'selected':''}>Nuevo</option>
+          <option ${c.estado==='En seguimiento'?'selected':''}>En seguimiento</option>
+          <option ${c.estado==='Activo'?'selected':''}>Activo</option>
+          <option ${c.estado==='Inactivo'?'selected':''}>Inactivo</option>
+        </select></td>
+        <td><button class="mini-btn" onclick="deleteCliente(${c.id})">✕</button></td>
+      </tr>
+    `).join('');
+  }
+  renderComercialKPIs();
+}
+
+function renderComercialKPIs() {
+  const el = document.getElementById('comercial-kpis');
+  if (!el) return;
+  const total = clientes.length;
+  const activaron = clientes.filter(c => c.activoPlan === 'Sí').length;
+  const pagaron = clientes.filter(c => c.monto && parseFloat(c.monto) > 0).length;
+  const tasa = total > 0 ? ((pagaron / total) * 100).toFixed(1) : '0.0';
+  const ingresoTotal = clientes.reduce((sum, c) => sum + (parseFloat(c.monto) || 0), 0);
+  el.innerHTML = `
+    <div class="kpi-card"><div class="kpi-num">${total}</div><div class="kpi-label">Registrados</div></div>
+    <div class="kpi-card blue"><div class="kpi-num">${activaron}</div><div class="kpi-label">Activaron Mi Plan</div></div>
+    <div class="kpi-card"><div class="kpi-num">${pagaron}</div><div class="kpi-label">Pagaron</div></div>
+    <div class="kpi-card v"><div class="kpi-num">${tasa}%</div><div class="kpi-label">Tasa conversión</div></div>
+    <div class="kpi-card gold"><div class="kpi-num">$${ingresoTotal.toLocaleString('es-AR')}</div><div class="kpi-label">Ingreso total ARS</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// MÓDULO: COMUNIDAD
+// ═══════════════════════════════════════════════════
+let canalPosts = [];
+let capacitaciones = [];
+function saveCanalPosts() { syncToCloud(); }
+function saveCapacitaciones() { syncToCloud(); }
+
+function setComunidadTab(tab) {
+  document.querySelectorAll('[data-cotab]').forEach(b => b.classList.toggle('active', b.dataset.cotab === tab));
+  document.getElementById('cotab-canal').style.display = tab === 'canal' ? 'block' : 'none';
+  document.getElementById('cotab-capacitaciones').style.display = tab === 'capacitaciones' ? 'block' : 'none';
+}
+
+function addCanalPost() {
+  canalPosts.push({ id: Date.now(), dia: 'Lunes', tipo: 'Herramienta gratuita', contenido: '', publicado: 'No' });
+  saveCanalPosts();
+  renderCanalPosts();
+}
+function updateCanalPost(id, field, value) {
+  const p = canalPosts.find(x => x.id === id);
+  if (p) { p[field] = value; saveCanalPosts(); }
+}
+function deleteCanalPost(id) {
+  canalPosts = canalPosts.filter(x => x.id !== id);
+  saveCanalPosts();
+  renderCanalPosts();
+}
+function renderCanalPosts() {
+  const tbody = document.getElementById('canal-tbody');
+  if (!tbody) return;
+  if (canalPosts.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--t3);">Sin publicaciones cargadas</td></tr>'; return; }
+  tbody.innerHTML = canalPosts.map(p => `
+    <tr>
+      <td><select onchange="updateCanalPost(${p.id},'dia',this.value)">${['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d => `<option ${p.dia===d?'selected':''}>${d}</option>`).join('')}</select></td>
+      <td><select onchange="updateCanalPost(${p.id},'tipo',this.value)">${['Herramienta gratuita','Oferta laboral','Recordatorio live','Historia de la comunidad','Reflexión'].map(t => `<option ${p.tipo===t?'selected':''}>${t}</option>`).join('')}</select></td>
+      <td><input type="text" value="${escapeHtml(p.contenido)}" placeholder="Descripción" onchange="updateCanalPost(${p.id},'contenido',this.value)"></td>
+      <td><select onchange="updateCanalPost(${p.id},'publicado',this.value)"><option ${p.publicado==='Sí'?'selected':''}>Sí</option><option ${p.publicado==='No'?'selected':''}>No</option></select></td>
+      <td><button class="mini-btn" onclick="deleteCanalPost(${p.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function addCapacitacion() {
+  capacitaciones.push({ id: Date.now(), fecha: '', tema: '', personas: '', activaron: '' });
+  saveCapacitaciones();
+  renderCapacitaciones();
+}
+function updateCapacitacion(id, field, value) {
+  const c = capacitaciones.find(x => x.id === id);
+  if (c) { c[field] = value; saveCapacitaciones(); renderCapacitaciones(); }
+}
+function deleteCapacitacion(id) {
+  capacitaciones = capacitaciones.filter(x => x.id !== id);
+  saveCapacitaciones();
+  renderCapacitaciones();
+}
+function renderCapacitaciones() {
+  const tbody = document.getElementById('capacitaciones-tbody');
+  if (!tbody) return;
+  if (capacitaciones.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--t3);">Sin capacitaciones cargadas</td></tr>'; return; }
+  tbody.innerHTML = capacitaciones.map(c => {
+    const tasa = (c.personas && parseFloat(c.personas) > 0) ? ((parseFloat(c.activaron || 0) / parseFloat(c.personas)) * 100).toFixed(1) + '%' : '—';
+    return `
+    <tr>
+      <td><input type="date" value="${c.fecha}" onchange="updateCapacitacion(${c.id},'fecha',this.value)"></td>
+      <td><input type="text" value="${escapeHtml(c.tema)}" placeholder="Tema de la capacitación" onchange="updateCapacitacion(${c.id},'tema',this.value)"></td>
+      <td><input type="number" value="${c.personas}" placeholder="0" onchange="updateCapacitacion(${c.id},'personas',this.value)"></td>
+      <td><input type="number" value="${c.activaron}" placeholder="0" onchange="updateCapacitacion(${c.id},'activaron',this.value)"></td>
+      <td style="color:var(--v); font-weight:700;">${tasa}</td>
+      <td><button class="mini-btn" onclick="deleteCapacitacion(${c.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// MÓDULO: FINANZAS
+// ═══════════════════════════════════════════════════
+let finanzas = [];
+function saveFinanzas() { syncToCloud(); }
+
+function saveObjetivos() {
+  syncToCloud();
+}
+function loadObjetivos() {
+  // Los objetivos ahora se cargan dentro de loadFromCloud()
+}
+
+function addFinanzaSemana() {
+  finanzas.push({ id: Date.now(), semana: '', ingresoPagoUnico: '', ingresoSuscripcion: '', costosFijos: '', clientesActivos: '' });
+  saveFinanzas();
+  renderFinanzas();
+}
+function updateFinanza(id, field, value) {
+  const f = finanzas.find(x => x.id === id);
+  if (f) { f[field] = value; saveFinanzas(); renderFinanzas(); }
+}
+function deleteFinanza(id) {
+  finanzas = finanzas.filter(x => x.id !== id);
+  saveFinanzas();
+  renderFinanzas();
+}
+function renderFinanzas() {
+  const tbody = document.getElementById('finanzas-tbody');
+  if (!tbody) return;
+  if (finanzas.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--t3);">Sin semanas cargadas</td></tr>'; }
+  else {
+    tbody.innerHTML = finanzas.map(f => `
+      <tr>
+        <td><input type="date" value="${f.semana}" onchange="updateFinanza(${f.id},'semana',this.value)"></td>
+        <td><input type="number" value="${f.ingresoPagoUnico}" placeholder="0" onchange="updateFinanza(${f.id},'ingresoPagoUnico',this.value)"></td>
+        <td><input type="number" value="${f.ingresoSuscripcion}" placeholder="0" onchange="updateFinanza(${f.id},'ingresoSuscripcion',this.value)"></td>
+        <td><input type="number" value="${f.costosFijos}" placeholder="40" onchange="updateFinanza(${f.id},'costosFijos',this.value)"></td>
+        <td><input type="number" value="${f.clientesActivos}" placeholder="0" onchange="updateFinanza(${f.id},'clientesActivos',this.value)"></td>
+        <td><button class="mini-btn" onclick="deleteFinanza(${f.id})">✕</button></td>
+      </tr>
+    `).join('');
+  }
+  renderFinanzasKPIs();
+}
+function renderFinanzasKPIs() {
+  const el = document.getElementById('finanzas-kpis');
+  if (!el) return;
+  const ingresoTotal = finanzas.reduce((s, f) => s + (parseFloat(f.ingresoPagoUnico) || 0) + (parseFloat(f.ingresoSuscripcion) || 0), 0);
+  const clientesActuales = finanzas.length > 0 ? (finanzas[finanzas.length - 1].clientesActivos || 0) : 0;
+  el.innerHTML = `
+    <div class="kpi-card v"><div class="kpi-num">$${ingresoTotal.toLocaleString('es-AR')}</div><div class="kpi-label">Ingreso total ARS</div></div>
+    <div class="kpi-card"><div class="kpi-num">${clientesActuales}</div><div class="kpi-label">Clientes activos (última semana)</div></div>
+    <div class="kpi-card gold"><div class="kpi-num">${finanzas.length}</div><div class="kpi-label">Semanas registradas</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// MÓDULO: AGENDA
+// ═══════════════════════════════════════════════════
+let tareas = [];
+function saveTareas() { syncToCloud(); }
+
+function addTarea() {
+  tareas.push({ id: Date.now(), tarea: '', area: 'Contenido', responsable: 'Germán', vence: '', hecha: false });
+  saveTareas();
+  renderTareas();
+}
+function updateTarea(id, field, value) {
+  const t = tareas.find(x => x.id === id);
+  if (t) { t[field] = value; saveTareas(); renderTareas(); }
+}
+function toggleTareaHecha(id) {
+  const t = tareas.find(x => x.id === id);
+  if (t) { t.hecha = !t.hecha; saveTareas(); renderTareas(); }
+}
+function deleteTarea(id) {
+  tareas = tareas.filter(x => x.id !== id);
+  saveTareas();
+  renderTareas();
+}
+function renderTareas() {
+  const tbody = document.getElementById('tareas-tbody');
+  if (!tbody) return;
+  if (tareas.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--t3);">Sin tareas cargadas</td></tr>'; return; }
+  tbody.innerHTML = tareas.map(t => `
+    <tr style="${t.hecha ? 'opacity:0.5;' : ''}">
+      <td><input type="text" value="${escapeHtml(t.tarea)}" placeholder="Descripción de la tarea" onchange="updateTarea(${t.id},'tarea',this.value)"></td>
+      <td><select onchange="updateTarea(${t.id},'area',this.value)">${['Contenido','Comercial','Comunidad','Finanzas','General'].map(a => `<option ${t.area===a?'selected':''}>${a}</option>`).join('')}</select></td>
+      <td><select onchange="updateTarea(${t.id},'responsable',this.value)">${['Germán','Nexus','Prince','Marc','Mike','Draper'].map(r => `<option ${t.responsable===r?'selected':''}>${r}</option>`).join('')}</select></td>
+      <td><input type="date" value="${t.vence}" onchange="updateTarea(${t.id},'vence',this.value)"></td>
+      <td style="text-align:center;"><input type="checkbox" ${t.hecha?'checked':''} onchange="toggleTareaHecha(${t.id})" style="width:16px; height:16px; cursor:pointer;"></td>
+      <td><button class="mini-btn" onclick="deleteTarea(${t.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// DASHBOARD GENERAL
+// ═══════════════════════════════════════════════════
+function renderDashboard() {
+  const objetivos = {
+    tiktok: document.getElementById('obj-tiktok') ? document.getElementById('obj-tiktok').value : '',
+    puntozero: document.getElementById('obj-puntozero') ? document.getElementById('obj-puntozero').value : '',
+    clientes: document.getElementById('obj-clientes') ? document.getElementById('obj-clientes').value : ''
+  };
+  const clientesActivos = clientes.filter(c => c.estado === 'Activo').length;
+  const totalIngreso = finanzas.reduce((s, f) => s + (parseFloat(f.ingresoPagoUnico) || 0) + (parseFloat(f.ingresoSuscripcion) || 0), 0);
+  const videosPublicados = weeks.reduce((s, w) => s + w.videos.filter(v => v.estado === 'Publicado').length, 0);
+  const tareasHechas = tareas.filter(t => t.hecha).length;
+
+  document.getElementById('dash-objetivo').innerHTML = `
+    <div class="kpi-card v"><div class="kpi-num">${clientesActivos}/${objetivos.clientes || '?'}</div><div class="kpi-label">Clientes activos / meta</div></div>
+    <div class="kpi-card blue"><div class="kpi-num">${objetivos.tiktok || '?'}</div><div class="kpi-label">Meta seguidores TikTok</div></div>
+    <div class="kpi-card gold"><div class="kpi-num">${objetivos.puntozero || '?'}</div><div class="kpi-label">Meta miembros PuntoZero</div></div>
+  `;
+
+  document.getElementById('dash-kpis').innerHTML = `
+    <div class="kpi-card"><div class="kpi-num">$${totalIngreso.toLocaleString('es-AR')}</div><div class="kpi-label">Ingreso total ARS</div></div>
+    <div class="kpi-card"><div class="kpi-num">${videosPublicados}</div><div class="kpi-label">Videos publicados</div></div>
+    <div class="kpi-card"><div class="kpi-num">${tareasHechas}/${tareas.length}</div><div class="kpi-label">Tareas completadas</div></div>
+    <div class="kpi-card"><div class="kpi-num">${contentItems.length}</div><div class="kpi-label">Ideas de contenido en danza</div></div>
+  `;
+
+  const totalOport = clientes.length;
+  const pagaron = clientes.filter(c => c.monto && parseFloat(c.monto) > 0).length;
+  const tasa = totalOport > 0 ? ((pagaron / totalOport) * 100).toFixed(1) : '0.0';
+  document.getElementById('dash-tasa-conversion').innerHTML = `<b>Tasa de conversión general:</b> ${tasa}% (${pagaron} de ${totalOport} registrados en el CRM pagaron el asesoramiento). Este es el número que define si hay que ajustar la presentación del Día de Oportunidad o si se puede escalar con confianza.`;
+}
+
+// ═══ INIT GENERAL — carga todo desde la nube ═══
+loadFromCloud();
+</script>
+
+</body>
+</html>
